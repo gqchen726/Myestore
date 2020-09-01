@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.briup.estore.mapper.ex.CategoryMapperEx">
+	<resultMap type="com.briup.estore.bean.ex.CategoryEx" id="CategoryBase">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+		<result property="description" column="description"/>
+	</resultMap>
+	<resultMap type="com.briup.estore.bean.Category" id="SecondCategories" extends="CategoryBase">
+		<result property="parentId" column="parent_id"/>
+	</resultMap>
+	<!-- 嵌套查询 -->
+	<resultMap type="com.briup.estore.bean.ex.CategoryEx" id="OnceCategoriesSelect" extends="CategoryBase">
+		<collection property="categories" select="selectSecondCategories" column="id"></collection>
+	</resultMap>
+	<select id="selectOnceCategories" resultMap="OnceCategoriesSelect">
+		select id,name,description,parent_id
+		from es_category
+		where parent_id = 0;
+	</select>
+	<select id="selectSecondCategories" resultMap="SecondCategories" parameterType="int">
+		select id,name,description,parent_id 
+		from es_category
+		where parent_id = #{parent_id};
+	</select>
+	<!-- 嵌套结果 -->
+	<resultMap type="com.briup.estore.bean.Category" id="Category">
+		<id property="id" column="eid"/>
+		<result property="name" column="ename"/>
+		<result property="description" column="edes"/>
+		<result property="parentId" column="epar"/>
+	</resultMap>
+	<resultMap type="com.briup.estore.bean.ex.CategoryEx" id="OnceCategoriesResult" extends="CategoryBase">
+		<collection property="categories" resultMap="Category"></collection>
+	</resultMap>
+	<!-- 一对多,自连接,一的一方做id -->
+	<select id="selectCategories" resultMap="OnceCategoriesResult">
+		select e1.id,e1.name,e1.description,e1.parent_id,e2.id eid,e2.name ename,e2.description edes,e2.parent_id epar
+		from es_category e1,es_category e2
+		where e1.id = e2.parent_id;
+	</select>
+	
+	
+	
+	<resultMap type="com.briup.estore.bean.Category" id="OnceCategoriesResult1">
+		<id property="id" column="eid"/>
+		<result property="name" column="ename"/>
+		<result property="description" column="edes"/>
+		<result property="parentId" column="epar"/>
+	</resultMap>
+	<resultMap type="com.briup.estore.bean.ex.CategoryEx" id="Category1" extends="CategoryBase">
+		<collection property="categories" resultMap="OnceCategoriesResult1"></collection>
+	</resultMap>
+	<!-- 一对多,自连接,一的一方做id -->
+	<select id="selectCategories1" resultMap="Category1">
+		select e1.id,e1.name,e1.description,e1.parent_id,e2.id eid,e2.name ename,e2.description edes,e2.parent_id epar
+		from es_category e1,es_category e2
+		where e1.id = e2.parent_id;
+	</select>
+</mapper>
